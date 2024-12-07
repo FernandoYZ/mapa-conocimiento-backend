@@ -12,3 +12,42 @@ datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
+
+model Role {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  users     User[]
+  rolePermissions RolePermission[]
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  oauthProvider String? @map("oauth_provider")
+  oauthId    String? @map("oauth_id")
+  name      String
+  email     String   @unique
+  avatarUrl    String?  @map("avatar_url")
+  roleId    Int?
+  role      Role?     @relation(fields: [roleId], references: [id])
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Permission {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  description String?
+  rolePermissions RolePermission[]
+}
+
+model RolePermission {
+  id        Int      @id @default(autoincrement())
+  roleId    Int
+  permissionId Int
+  role      Role     @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@unique([roleId, permissionId])
+}
+
